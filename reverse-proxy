@@ -1,0 +1,354 @@
+# CAREPRO - Web
+server {
+    listen 80;
+    server_name carepro2.ihmafrica.com;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name carepro2.ihmafrica.com;
+
+    ssl_certificate /etc/nginx/ssl/certificate.crt;
+    ssl_certificate_key /etc/nginx/ssl/server.key;
+
+    location / {
+        if ($cookie_session_id = "") {
+            add_header Set-Cookie "session_id=$request_id; Path=/; HttpOnly";
+        }
+
+        proxy_pass http://carepro_web_servers;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_buffering off;
+    }
+
+    location /carepro/ {
+        rewrite ^/carepro(/.*)$ /carepro-api$1 break;
+        proxy_pass http://carepro_api_servers/carepro-api;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/html;
+    }
+}
+
+# CAREPRO - Admin
+server {
+    listen 80;
+    server_name carepro-admin2.ihmafrica.com;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name carepro-admin2.ihmafrica.com;
+
+    ssl_certificate /etc/nginx/ssl/certificate.crt;
+    ssl_certificate_key /etc/nginx/ssl/server.key;
+
+    location / {
+        proxy_pass http://carepro_admin_servers;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_read_timeout 600s;
+        proxy_send_timeout 600s;
+        proxy_connect_timeout 600s;
+        proxy_buffering off;
+    }
+}
+
+# CAREPRO - SCRS
+server {
+    listen 80;
+    server_name carepro-scrs2.ihmafrica.com;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name carepro-scrs2.ihmafrica.com;
+
+    ssl_certificate /etc/nginx/ssl/certificate.crt;
+    ssl_certificate_key /etc/nginx/ssl/server.key;
+
+    location / {
+        proxy_pass http://carepro_scrs_servers;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_read_timeout 600s;
+        proxy_send_timeout 600s;
+        proxy_connect_timeout 600s;
+        proxy_buffering off;
+    }
+}
+
+
+#CAREPRO MOH - SCRS
+
+server {
+    listen 80;
+    server_name carepro.moh.gov.zm;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name carepro.moh.gov.zm;
+
+        ssl_certificate /etc/nginx/ssl/certificate.crt;
+        ssl_certificate_key /etc/nginx/ssl/server.key;
+
+        location / {
+        proxy_pass http://carepro_scrs_servers;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}
+
+
+#CAREPRO ADMIN INSTANCE FOR TRAINING
+
+
+server {
+    listen 80;
+    server_name carepro-training-admin.ihmafrica.com;
+    return 301 https://$host$request_uri;
+}
+server {
+    # SSL CONFIGURATION:
+    listen 443 ssl;
+    server_name carepro-training-admin.ihmafrica.com;
+    ssl_certificate /etc/nginx/ssl/certificate.crt;
+    ssl_certificate_key /etc/nginx/ssl/server.key;
+
+    location / {
+        proxy_pass http://carepro_training_admin_nodes;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+    location /.well-known/acme-challenge/ {
+        root /var/www/html;
+    }
+}
+
+#CAREPRO WEB INSTANCE FOR TRAINING
+
+server {
+    listen 80;
+    server_name carepro-training.ihmafrica.com;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name carepro-training.ihmafrica.com;
+    # SSL configuration
+    ssl_certificate /etc/nginx/ssl/certificate.crt;
+    ssl_certificate_key /etc/nginx/ssl/server.key;
+
+    location / {
+        proxy_pass http://carepro_training_web_nodes;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location /carepro/ {
+        rewrite ^/carepro(/.*)$ /carepro-api$1 break;
+        proxy_pass http://carepro_training_api_nodes/carepro-api;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/html;
+    }
+}
+
+#CAREPRO SCRS INSTANCE FOR TRAINING
+
+
+server {
+    listen 80;
+    server_name carepro-training-scrs.ihmafrica.com;
+    return 301 https://$host$request_uri;
+}
+server {
+    # SSL CONFIGURATION:
+    listen 443 ssl;
+    server_name carepro-training-scrs.ihmafrica.com;
+    ssl_certificate /etc/nginx/ssl/certificate.crt;
+    ssl_certificate_key /etc/nginx/ssl/server.key;
+
+    location / {
+        proxy_pass http://carepro_training_scrs_nodes;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+    location /.well-known/acme-challenge/ {
+        root /var/www/html;
+    }
+}
+
+
+#CAREPRO DASHBOARD
+
+server {
+    listen 80;
+    server_name dashboard2.ihmafrica.com;
+    return 301 https://$host$request_uri;
+}
+server {
+    # SSL CONFIGURATION:
+    listen 443 ssl;
+    server_name dashboard2.ihmafrica.com;
+    ssl_certificate /etc/nginx/ssl/certificate.crt;
+    ssl_certificate_key /etc/nginx/ssl/server.key;
+
+    location / {
+        proxy_pass http://carepro_dashboard_nodes;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+
+#CAREPRO: ADMIN INSTANCE FOR STAGING
+
+server {
+    listen 80;
+    server_name carepro-staging-admin.ihmafrica.com;
+    return 301 https://$host$request_uri;
+}
+server {
+    # SSL CONFIGURATION:
+    listen 443 ssl;
+    server_name carepro-staging-admin.ihmafrica.com;
+    ssl_certificate /etc/nginx/ssl/certificate.crt;
+    ssl_certificate_key /etc/nginx/ssl/server.key;
+
+    location / {
+        proxy_pass http://carepro_staging_admin_nodes;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+    location /.well-known/acme-challenge/ {
+        root /var/www/html;
+    }
+}
+
+
+#CAREPRO: WEB INSTANCE FOR STAGING
+
+
+server {
+    listen 80;
+    server_name carepro-staging.ihmafrica.com;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name carepro-staging.ihmafrica.com;
+    # SSL configuration
+    ssl_certificate /etc/nginx/ssl/certificate.crt;
+    ssl_certificate_key /etc/nginx/ssl/server.key;
+
+    location / {
+        proxy_pass http://carepro_staging_web_nodes;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location /carepro/ {
+        rewrite ^/carepro(/.*)$ /carepro-api$1 break;
+        proxy_pass http://carepro_staging_api_nodes/carepro-api;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/html;
+    }
+}
+
+
+#CAREPRO: SCRS INSTANCE FOR STAGING
+
+
+server {
+    listen 80;
+    server_name carepro-staging-scrs.ihmafrica.com;
+    return 301 https://$host$request_uri;
+}
+server {
+    # SSL CONFIGURATION:
+    listen 443 ssl;
+    server_name carepro-staging-scrs.ihmafrica.com;
+    ssl_certificate /etc/nginx/ssl/certificate.crt;
+    ssl_certificate_key /etc/nginx/ssl/server.key;
+
+    location / {
+        proxy_pass http://carepro_staging_scrs_nodes;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+    location /.well-known/acme-challenge/ {
+        root /var/www/html;
+    }
+}
+
+
+#CAREPRO MOH
+
+server {
+        listen 443 ssl;
+        listen [::]:443;
+
+        server_name 2.moh.gov.zm;
+        ssl_certificate /etc/nginx/ssl2/certificate.crt;
+        ssl_certificate_key /etc/nginx/ssl2/server.key;
+
+        root /var/www/html;
+        index index.html index.htm index.nginx-debian.html;
+
+        location / {
+                try_files $uri $uri/ =404;
+        }
+}
